@@ -14,7 +14,7 @@ function* fetchObjects(action: PayloadAction<string>) {
   }
 }
 
-function* fetchContent(action: PayloadAction<number>) {
+function* fetchContent(action: PayloadAction<OakObject>) {
   try {
     const Json: OakJson = yield call(OakApi.findContent, action.payload);
     yield put(setContent(Json));
@@ -25,8 +25,6 @@ function* fetchContent(action: PayloadAction<number>) {
 }
 
 export function* mySaga() {
-  const actionType = updateObjects("").type
-  yield takeEvery(actionType, fetchObjects);
-  const triggerFetchContent = getContent(0).type
-  yield takeEvery(triggerFetchContent, fetchContent)
+  yield takeEvery(updateObjects.type, fetchObjects);
+  yield takeEvery(getContent.type, fetchContent)
 }

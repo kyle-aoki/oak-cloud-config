@@ -26,9 +26,9 @@ type Configuration struct {
 	OakPassword   string `json:"oakPassword"`
 }
 
-func CheckEmpty(fieldname string, value string) {
+func CheckEmpty(fieldName string, value string) {
 	if len(value) == 0 {
-		panic(fmt.Sprintf("invalid config: '%s' is empty", fieldname))
+		panic(fmt.Sprintf("invalid config: '%s' is empty", fieldName))
 	}
 }
 

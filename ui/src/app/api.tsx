@@ -15,7 +15,7 @@ export default class OakApi {
     return fetchJson(`${OakApi.host}/objects?path=${path}`);
   }
 
-  static async findContent(objectId: number): Promise<OakJson> {
-    return fetchJson(`${OakApi.host}/content?object=${objectId}`);
+  static async findContent(object: OakObject): Promise<OakJson> {
+    return fetchJson(`${OakApi.host}/content?object=${object.id}`);
   }
 }

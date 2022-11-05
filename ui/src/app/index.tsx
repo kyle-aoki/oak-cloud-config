@@ -1,32 +1,18 @@
 import Editor from "@monaco-editor/react";
-import { MouseEventHandler, ReactElement, useEffect, useState } from "react";
+import { MouseEventHandler, ReactElement, useEffect } from "react";
 import styled from "styled-components";
-import { BorderColor, GrayBackground, LightGrayBackground, ObjectHover } from "../constants";
+import {
+  BorderColor,
+  GrayBackground,
+  LightGrayBackground,
+  ObjectActive,
+  ObjectHover,
+  ObjectSelectedBg
+} from "../constants";
 import { OakObject } from "./types";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
 import { getContent, objectClick, popPath, updateObjects } from "./redux";
-
-async function JsonFetcher(path: string) {
-  const resp = await fetch(path);
-  return await resp.json();
-}
-
-async function fetchAndSet(fetcher: Function, setter: Function): Promise<void> {
-  setter(await fetcher());
-}
-
-const OakHost = "http://localhost:8080";
-const ObjectsEndpoint = `${OakHost}/objects`;
-const ContentEndpoint = `${OakHost}/content`;
-
-function FormContentEndpoint(objectId: number): string {
-  return `${ContentEndpoint}?object=${objectId}`;
-}
-
-function FormObjectsEndpoint(currentPath: string) {
-  return `${ObjectsEndpoint}?path=${currentPath}`;
-}
 
 export default function App() {
 
@@ -34,54 +20,55 @@ export default function App() {
   const d = useDispatch();
 
   useEffect(() => {
-    d(updateObjects(mainState.path))
-  }, [])
+    if (mainState.path.endsWith('.json')) return
+    console.log(mainState.path)
+    d(updateObjects(mainState.path));
+  }, [mainState.path]);
 
-  useEffect(() => {
-    d(updateObjects(mainState.path))
-  }, [mainState.path])
-
-  const objectOnClick = (obj: OakObject) => {
+  const onObjectClick = (obj: OakObject) => {
     if (obj.isJson) {
-      d(getContent(obj.id));
+      d(getContent(obj));
     } else {
       d(objectClick(obj.name));
     }
   };
 
-  const onBackButtonClick = () => d(popPath());
-
   return (
     <AppPane>
-      <Navbar></Navbar>
+      <TopLoadingBar />
+      <Navbar>oak</Navbar>
       <PathBar>{mainState.path}</PathBar>
       <AppBodyPane>
         <WorkbenchPane>
           <WorkBenchControl>
-            <Icon>/</Icon>
-            <Icon onClick={() => onBackButtonClick()}>..</Icon>
+            <MenuButton>/</MenuButton>
+            <MenuButton onClick={() => d(popPath())}>..</MenuButton>
           </WorkBenchControl>
           {
             mainState.workbench.map(
               (obj, idx) => {
                 return <ObjectContainer
                   key={idx}
-                  onClick={() => objectOnClick(obj)}
+                  onClick={() => onObjectClick(obj)}
                   object={obj}
                 />;
               })
           }
         </WorkbenchPane>
         <TextEditorPane>
-          <TextEditorBar>text editor bar</TextEditorBar>
+          <TextEditorBar>
+            <TextEditorLeftSide><MenuButton>copy</MenuButton></TextEditorLeftSide>
+            <TextEditorCenter>{mainState.open?.name}</TextEditorCenter>
+            <TextEditorRightSide><MenuButton>new version</MenuButton></TextEditorRightSide>
+          </TextEditorBar>
           <Outer>
             <Inner>
               <Editor
                 theme="vs-dark"
                 defaultLanguage="json"
                 defaultValue=""
-                value={mainState.Json.content}
-                options={{ readOnly: true }}
+                value={mainState.Json?.content}
+                options={{ readOnly: false }}
               />
             </Inner>
           </Outer>
@@ -99,7 +86,14 @@ export const ObjectContainer = (
     object: OakObject,
     onClick: MouseEventHandler<HTMLElement>
   }): ReactElement => {
-  return <ObjectPane onClick={onClick}>{object.name}</ObjectPane>;
+  const mainState = useSelector((state: RootState) => state.main);
+
+  return <>
+    {object.id === mainState.open?.id ?
+      <ObjectSelected onClick={onClick}>{object.name}</ObjectSelected>
+      :
+      <ObjectPane onClick={onClick}>{object.name}</ObjectPane>}
+  </>;
 };
 
 export const BaseObjectPane = styled.div`
@@ -116,11 +110,23 @@ export const ObjectPane = styled(BaseObjectPane)`
   &:hover {
     background-color: ${ObjectHover};
   }
+
+  &:active {
+    background-color: ${ObjectActive};
+  }
 `;
-// styled(BaseObjectPane)`
-//   background-color: ${ObjectSelectedBg};
-//   border: 1px solid ${ObjectSelectedBorder};
-// `;
+export const ObjectSelected = styled(BaseObjectPane)`
+  background-color: ${ObjectSelectedBg};
+`;
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+export const TopLoadingBar = styled.div`
+  width: 100%;
+  height: 1px;
+  background-color: transparent;
+`;
 export const Root = styled.div`
     /* border: 1px solid ${BorderColor}; */
   display: flex;
@@ -133,6 +139,8 @@ export const AppPane = styled(Root)`
   width: 100%;
 `;
 export const Navbar = styled(Root)`
+  flex-direction: row;
+  padding-left: 15px;
   width: 100%;
   height: 40px;
   border-bottom: 2px solid ${BorderColor};
@@ -173,13 +181,34 @@ export const TextEditorPane = styled(Root)`
 `;
 export const TextEditorBar = styled(Root)`
   display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
   background-color: ${LightGrayBackground};
   border-bottom: 2px solid ${BorderColor};
   width: 100%;
   height: 35.5px;
   margin-bottom: 4px;
+  padding-left: 12px;
+  padding-right: 12px;
+`;
+export const TextEditorLeftSide = styled(Root)`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+`;
+export const TextEditorCenter = styled(Root)`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+`;
+export const TextEditorRightSide = styled(Root)`
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  width: 100%;
 `;
 export const Outer = styled.div`
   height: 100%;
@@ -198,21 +227,22 @@ export const Inner = styled.div`
   position: absolute;
 `;
 
-export const Icon = styled.div`
+export const MenuButton = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
   user-select: none;
   height: 20px;
-  width: 25px;
-  background-color: #e15454;
+  min-width: 32px;
+  background-color: #393ed7;
   border-radius: 5px;
+  padding: 0 8px;
 
   &:hover {
-    background-color: #e68383;
+    background-color: #565ad5;
   }
 
   &:active {
-    background-color: #ef5f5f;
+    background-color: #1f25e1;
   }
 `;
