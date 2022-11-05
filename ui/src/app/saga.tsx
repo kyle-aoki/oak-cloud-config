@@ -1,30 +1,29 @@
 import { call, put, takeEvery, takeLatest } from 'redux-saga/effects'
 import OakApi from './api'
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { getContent, setContent, setObjects, updateObjects } from "./redux";
-import { OakJson, OakObject } from "./types";
+import { getFile, setFile, setObjects, getObjects, changeDirectoryDown } from "./redux";
+import { OakFile, OakObject } from "./types";
 
-function* fetchObjects(action: PayloadAction<string>) {
+function* setObjectsSaga(action: PayloadAction<string[]>) {
   try {
-    const objs: OakObject[] = yield call(OakApi.findObjects, action.payload);
+    const objs: OakObject[] = yield call(OakApi.getObjects, action.payload);
     yield put(setObjects(objs));
   } catch (e) {
     console.log(e)
-    yield put(setObjects([]));
   }
 }
 
-function* fetchContent(action: PayloadAction<OakObject>) {
+function* setFileSaga(action: PayloadAction<OakObject>) {
   try {
-    const Json: OakJson = yield call(OakApi.findContent, action.payload);
-    yield put(setContent(Json));
+    const oakFile: OakFile = yield call(OakApi.getContent, action.payload);
+    yield put(setFile(oakFile));
   } catch (e) {
     console.log(e)
-    yield put(setContent({ id: 0, content: ""}));
   }
 }
 
-export function* mySaga() {
-  yield takeEvery(updateObjects.type, fetchObjects);
-  yield takeEvery(getContent.type, fetchContent)
+export function* SagaList() {
+  yield takeEvery(getObjects.type, setObjectsSaga);
+  yield takeEvery(changeDirectoryDown.type, setObjectsSaga)
+  yield takeEvery(getFile.type, setFileSaga)
 }

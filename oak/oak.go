@@ -118,12 +118,12 @@ func main() {
 
 	// /objects?path=/insurance
 	r.GET("/objects", func(ctx *gin.Context) {
-		path := ctx.Query("path")
+		path := ctx.Query("parent")
 		if len(path) == 0 {
 			path = "/"
 		}
-		var objs []Object
-		sql := `select id, parent, name, is_json from object where parent = ?`
+		var objs []OakObject
+		sql := `SELECT id, parent, name, is_file FROM object WHERE parent = ?`
 		stmt, err := db.Preparex(sql)
 		Check(err)
 		err = stmt.Select(&objs, path)
@@ -138,40 +138,42 @@ func main() {
 			ctx.JSON(400, map[string]string{"message": "bad request"})
 			return
 		}
-		var content Json
-		sql := `select j.id, content from object_json
-		join json j on j.id = object_json.json_id
-		where object_id = ?`
+		var oakFile OakFile
+		sql := `SELECT file.id, file.content, file.version, file.is_committed
+		FROM object_file JOIN file ON file.id = object_file.file_id
+		WHERE object_id = ?`
 		stmt, err := db.Preparex(sql)
 		Check(err)
-		err = stmt.Get(&content, objectId)
+		err = stmt.Get(&oakFile, objectId)
 		Check(err)
-		ctx.JSON(200, content)
+		ctx.JSON(200, oakFile)
 	})
 
 	err = r.Run()
 	Check(err)
 }
 
-type User struct {
+type OakUser struct {
 	Id       uint64 `json:"id"`
 	Username string `json:"username"`
 }
 
-type Object struct {
+type OakObject struct {
 	Id     uint64 `json:"id" db:"id"`
 	Parent string `json:"parent" db:"parent"`
 	Name   string `json:"name" db:"name"`
-	IsJson bool   `json:"isJson" db:"is_json"`
+	IsFile bool   `json:"isFile" db:"is_file"`
 }
 
-type Json struct {
-	Id      uint64 `json:"id"`
-	Content string `json:"content"`
+type OakFile struct {
+	Id          uint64 `json:"id"`
+	Content     string `json:"content"`
+	Version     int    `json:"version"`
+	IsCommitted bool   `json:"isCommitted"`
 }
 
-type ObjectJson struct {
+type OakObjectFile struct {
 	Id       uint64 `json:"id"`
 	ObjectId uint64 `json:"objectId"`
-	JsonId   uint64 `json:"jsonId"`
+	FileId   uint64 `json:"fileId"`
 }

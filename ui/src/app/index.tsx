@@ -12,53 +12,46 @@ import {
 import { OakObject } from "./types";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
-import { getContent, objectClick, popPath, updateObjects } from "./redux";
+import { changeDirectoryDown, getObjects, useMainState } from "./redux";
+
+export function useLoadRootDir() {
+  const mainState = useMainState();
+  const d = useDispatch();
+  useEffect(() => {
+    d(getObjects([]));
+  }, []);
+}
 
 export default function App() {
 
   const mainState = useSelector((state: RootState) => state.main);
   const d = useDispatch();
 
-  useEffect(() => {
-    if (mainState.path.endsWith('.json')) return
-    console.log(mainState.path)
-    d(updateObjects(mainState.path));
-  }, [mainState.path]);
+  useLoadRootDir();
 
-  const onObjectClick = (obj: OakObject) => {
-    if (obj.isJson) {
-      d(getContent(obj));
-    } else {
-      d(objectClick(obj.name));
-    }
-  };
 
   return (
     <AppPane>
       <TopLoadingBar />
       <Navbar>oak</Navbar>
-      <PathBar>{mainState.path}</PathBar>
+      <PathBar>{`/${mainState.path.join('/')}`}</PathBar>
       <AppBodyPane>
         <WorkbenchPane>
           <WorkBenchControl>
             <MenuButton>/</MenuButton>
-            <MenuButton onClick={() => d(popPath())}>..</MenuButton>
+            <MenuButton onClick={() => d(changeDirectoryDown())}>..</MenuButton>
           </WorkBenchControl>
           {
-            mainState.workbench.map(
+            mainState.objects.map(
               (obj, idx) => {
-                return <ObjectContainer
-                  key={idx}
-                  onClick={() => onObjectClick(obj)}
-                  object={obj}
-                />;
+                return <ObjectContainer key={idx} object={obj} />;
               })
           }
         </WorkbenchPane>
         <TextEditorPane>
           <TextEditorBar>
             <TextEditorLeftSide><MenuButton>copy</MenuButton></TextEditorLeftSide>
-            <TextEditorCenter>{mainState.open?.name}</TextEditorCenter>
+            <TextEditorCenter>{mainState.OakObject?.name}</TextEditorCenter>
             <TextEditorRightSide><MenuButton>new version</MenuButton></TextEditorRightSide>
           </TextEditorBar>
           <Outer>
@@ -67,7 +60,7 @@ export default function App() {
                 theme="vs-dark"
                 defaultLanguage="json"
                 defaultValue=""
-                value={mainState.Json?.content}
+                value={mainState.OakFile?.content}
                 options={{ readOnly: false }}
               />
             </Inner>
@@ -78,18 +71,12 @@ export default function App() {
   );
 }
 
-export const ObjectContainer = (
-  {
-    object,
-    onClick
-  }: {
-    object: OakObject,
-    onClick: MouseEventHandler<HTMLElement>
-  }): ReactElement => {
+export const ObjectContainer = ({ object }: { object: OakObject }): ReactElement => {
   const mainState = useSelector((state: RootState) => state.main);
-
+  const d = useDispatch();
+  const onClick = () => d(getObjects([...mainState.path, object.name]));
   return <>
-    {object.id === mainState.open?.id ?
+    {object.id === mainState.OakObject?.id ?
       <ObjectSelected onClick={onClick}>{object.name}</ObjectSelected>
       :
       <ObjectPane onClick={onClick}>{object.name}</ObjectPane>}
@@ -148,7 +135,7 @@ export const Navbar = styled(Root)`
 export const PathBar = styled(Root)`
   width: 100%;
   height: 20px;
-  border-bottom: 2px solid ${BorderColor};
+  //border-bottom: 2px solid ${BorderColor};
   font-size: 12px;
   flex-direction: row;
   padding-left: 12px;
