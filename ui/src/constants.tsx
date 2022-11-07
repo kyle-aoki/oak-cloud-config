@@ -9,3 +9,4 @@ export const ChipBg = "#424246";
 export const MenuButtonBg = "#2e2ece";
 export const CommitButtonBg = "#34bd64";
 export const CancelButtonBg = "#e02727";
+export const WritingChipBg = '#424246';

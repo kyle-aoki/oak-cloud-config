@@ -61,6 +61,7 @@ export class Workbench extends Stateful<MainState, SetMainState> {
         ...this.state,
         loading: true,
         fileClicked: object,
+        editing: false,
         readOnly: true
       });
       return;

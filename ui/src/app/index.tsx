@@ -13,7 +13,6 @@ import {
   Navbar,
   NewVersionButton,
   NewVersionChip,
-  OldVersionChip,
   Outer,
   PathBar,
   ReadOnlyChip,
@@ -74,19 +73,21 @@ export default function App() {
         <TextEditorPane>
           <TextEditorBar>
             <TextEditorLeftSide>
-              <MenuButton>copy</MenuButton>
+              {Boolean(state.openFile) && <MenuButton>copy</MenuButton>}
               <>
                 {
-                  state.readOnly ?
+                  Boolean(state.openFile) &&
+                  (state.readOnly ?
                     <ReadOnlyChip>read-only</ReadOnlyChip>
                     :
-                    <WritingChip>writing</WritingChip>
+                    <WritingChip>writing</WritingChip>)
                 }
                 {
                   state.editing &&
                   <>
-                    <OldVersionChip>v{state.openFile?.version as number - 1}</OldVersionChip>
-                    <NewVersionChip>v{state.openFile?.version}</NewVersionChip>
+                    <NewVersionChip>
+                      v{state.openFile?.version as number - 1} {"-->"} v{state.openFile?.version}
+                    </NewVersionChip>
                   </>
                 }
                 {
@@ -102,19 +103,22 @@ export default function App() {
             <TextEditorCenter></TextEditorCenter>
             <TextEditorRightSide>
               {
-                state.editing ?
-                  <>
-                    <CommitButton
-                      onClick={() => textEditor.commit()}>commit
-                    </CommitButton>
-                    <CancelButton
-                      onClick={() => textEditor.cancel()}>cancel
-                    </CancelButton>
-                  </>
-                  :
-                  <NewVersionButton onClick={() => textEditor.newVersion()}>new
-                    version
-                  </NewVersionButton>
+                Boolean(state.openFile) &&
+                (
+                  state.editing ?
+                    <>
+                      <CommitButton
+                        onClick={() => textEditor.commit()}>commit
+                      </CommitButton>
+                      <CancelButton
+                        onClick={() => textEditor.cancel()}>cancel
+                      </CancelButton>
+                    </>
+                    :
+                    <NewVersionButton onClick={() => textEditor.newVersion()}>new
+                      version
+                    </NewVersionButton>
+                )
               }
             </TextEditorRightSide>
           </TextEditorBar>
