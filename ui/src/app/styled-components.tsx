@@ -5,7 +5,7 @@ import {
   CommitButtonBg,
   GrayBackground,
   LightGrayBackground,
-  MenuButtonBg, WritingChipBg
+  MenuButtonBg, NewVersionChipBg, WritingChipBg
 } from "../constants";
 
 export const Root = styled.div`
@@ -161,4 +161,6 @@ export const WritingChip = styled(Chip)`
 `;
 export const OldVersionChip = styled(Chip)``;
 export const VersionChip = styled(Chip)``;
-export const NewVersionChip = styled(Chip)``;
+export const NewVersionChip = styled(Chip)`
+  background-color: ${NewVersionChipBg};
+`;
