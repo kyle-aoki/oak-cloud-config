@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import {
-  BorderColor,
+  BorderColor, CancelButtonBg,
   ChipBg,
   CommitButtonBg,
   GrayBackground,
@@ -135,18 +135,29 @@ export const NewVersionButton = styled(MenuButton)`
   background-color: ${MenuButtonBg};
 `;
 export const CancelButton = styled(MenuButton)`
-  width: 150px;
-  background-color: ${CommitButtonBg};
+  width: 100px;
+  background-color: ${CancelButtonBg};
 `;
 export const CommitButton = styled(MenuButton)`
-  width: 150px;
+  width: 100px;
   background-color: ${CommitButtonBg};
 `;
-export const Chip = styled.div<{ visible: boolean }>`
-  visibility: ${({ visible }) => visible ? "visible" : "hidden"};
+export const Chip = styled.div`
   border-radius: 12px;
   padding: 3px 10px;
   font-size: 10px;
   background-color: ${ChipBg};
   user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
+export const ReadOnlyChip = styled(Chip)`
+  width: 80px;
+`;
+export const WritingChip = styled(Chip)`
+  width: 80px;
+`;
+export const OldVersionChip = styled(Chip)``;
+export const VersionChip = styled(Chip)``;
+export const NewVersionChip = styled(Chip)``;

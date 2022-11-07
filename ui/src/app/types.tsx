@@ -6,6 +6,7 @@ export interface MainState {
   objects: OakObject[];
   fileClicked: OakObject | null;
   folderClicked: OakObject | null;
+  oldContent: string;
   openFile: OakFile | null;
   readOnly: boolean;
   editing: boolean;

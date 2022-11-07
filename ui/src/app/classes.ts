@@ -44,11 +44,11 @@ export class MainHooks extends Stateful<MainState, SetMainState> {
         this.setState({
           ...this.state,
           commitFile: false,
-          editing: false,
-        })
+          editing: false
+        });
       })();
     }, [this.state.commitFile]);
-  }
+  };
 
 }
 
@@ -91,11 +91,12 @@ export class TextEditor extends Stateful<MainState, SetMainState> {
       ...this.state,
       editing: true,
       readOnly: false,
+      oldContent: this.state.openFile.content,
       openFile: {
         ...this.state.openFile,
         version: this.state.openFile.version + 1
       }
-    })
+    });
   }
 
   onTextEditorChange(str: string | undefined) {
@@ -114,7 +115,23 @@ export class TextEditor extends Stateful<MainState, SetMainState> {
     this.setState({
       ...this.state,
       commitFile: true,
+      readOnly: true
+    });
+  }
+
+  cancel() {
+    if (this.state.commitFile) return;
+    if (!this.state.editing) return;
+    if (!this.state.openFile || !this.state.openFile.version) return;
+    this.setState({
+      ...this.state,
       readOnly: true,
+      editing: false,
+      openFile: {
+        ...this.state.openFile,
+        content: this.state.oldContent,
+        version: this.state.openFile.version - 1
+      }
     });
   }
 

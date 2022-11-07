@@ -5,21 +5,26 @@ import { MainHooks, TextEditor, Workbench } from "./classes";
 import {
   AppBodyPane,
   AppPane,
+  CancelButton,
   Chip,
   CommitButton,
   Inner,
   MenuButton,
   Navbar,
   NewVersionButton,
+  NewVersionChip,
+  OldVersionChip,
   Outer,
   PathBar,
+  ReadOnlyChip,
   TextEditorBar,
   TextEditorCenter,
   TextEditorLeftSide,
   TextEditorPane,
   TextEditorRightSide,
   WorkBenchControl,
-  WorkbenchPane
+  WorkbenchPane,
+  WritingChip
 } from "./styled-components";
 import { WorkbenchObject } from "../workbench-object";
 
@@ -31,6 +36,7 @@ export default function App() {
     objects: [],
     fileClicked: null,
     folderClicked: null,
+    oldContent: "",
     openFile: null,
     readOnly: true,
     editing: false,
@@ -69,12 +75,29 @@ export default function App() {
           <TextEditorBar>
             <TextEditorLeftSide>
               <MenuButton>copy</MenuButton>
-              <Chip
-                visible={Boolean(state.openFile) && state.readOnly}
-              >read-only</Chip>
-              <Chip visible={Boolean(state.openFile)}>
-                v{state.openFile?.version}
-              </Chip>
+              <>
+                {
+                  state.readOnly ?
+                    <ReadOnlyChip>read-only</ReadOnlyChip>
+                    :
+                    <WritingChip>writing</WritingChip>
+                }
+                {
+                  state.editing &&
+                  <>
+                    <OldVersionChip>v{state.openFile?.version as number - 1}</OldVersionChip>
+                    <NewVersionChip>v{state.openFile?.version}</NewVersionChip>
+                  </>
+                }
+                {
+                  state.openFile && !state.editing &&
+                  <>
+                    <Chip>
+                      v{state.openFile?.version}
+                    </Chip>
+                  </>
+                }
+              </>
             </TextEditorLeftSide>
             <TextEditorCenter></TextEditorCenter>
             <TextEditorRightSide>
@@ -84,9 +107,9 @@ export default function App() {
                     <CommitButton
                       onClick={() => textEditor.commit()}>commit
                     </CommitButton>
-                    <CommitButton
-                      onClick={() => {}}>cancel
-                    </CommitButton>
+                    <CancelButton
+                      onClick={() => textEditor.cancel()}>cancel
+                    </CancelButton>
                   </>
                   :
                   <NewVersionButton onClick={() => textEditor.newVersion()}>new
