@@ -12,11 +12,18 @@ export default class OakApi {
   static host: string = "http://localhost:8080";
 
   static async getObjects(path: string[]): Promise<OakObject[]> {
-    const strPath = `/${path.join('/')}`;
+    const strPath = `/${path.join("/")}`;
     return fetchJson(`${OakApi.host}/objects?parent=${strPath}`);
   }
 
-  static async getContent(object: OakObject): Promise<OakFile> {
+  static async getFile(object: OakObject): Promise<OakFile> {
     return fetchJson(`${OakApi.host}/content?object=${object.id}`);
+  }
+
+  static async upgradeFile(file: OakFile): Promise<OakFile> {
+    return fetchJson(`${OakApi.host}/upgrade`, {
+      method: "POST",
+      body: JSON.stringify(file)
+    });
   }
 }

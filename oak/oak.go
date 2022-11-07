@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
+	"time"
 
 	// "log"
 	"net/http"
@@ -110,6 +112,15 @@ func main() {
 	r := gin.Default()
 	r.Use(cors.Default())
 
+	r.Use(func(ctx *gin.Context) {
+		n := rand.Intn(1000)
+		if n < 500 {
+			n = n + 500
+		}
+		time.Sleep(time.Millisecond * time.Duration(n))
+		ctx.Next()
+	})
+
 	r.GET("/", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
 			"message": "pong",
@@ -149,6 +160,25 @@ func main() {
 		ctx.JSON(200, oakFile)
 	})
 
+	r.POST("/upgrade", func(ctx *gin.Context) {
+		var oakFile OakFile
+		err := ctx.BindJSON(&oakFile)
+		Check(err)
+		sql := `
+			UPDATE file
+			SET content      = ?,
+				is_committed = TRUE,
+				version      = ?
+			WHERE file.id = ?;`
+		stmt, err := db.Preparex(sql)
+		Check(err)
+		res, err := stmt.Exec(oakFile.Content, oakFile.Version, oakFile.Id)
+		Check(err)
+		_, err = res.RowsAffected()
+		Check(err)
+		ctx.JSON(200, nil)
+	})
+
 	err = r.Run()
 	Check(err)
 }
@@ -166,10 +196,10 @@ type OakObject struct {
 }
 
 type OakFile struct {
-	Id          uint64 `json:"id"`
-	Content     string `json:"content"`
-	Version     int    `json:"version"`
-	IsCommitted bool   `json:"isCommitted"`
+	Id          uint64 `json:"id" db:"id"`
+	Content     string `json:"content" db:"content"`
+	Version     int    `json:"version" db:"version"`
+	IsCommitted bool   `json:"isCommitted" db:"is_committed"`
 }
 
 type OakObjectFile struct {
