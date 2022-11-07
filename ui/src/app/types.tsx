@@ -8,6 +8,8 @@ export interface MainState {
   folderClicked: OakObject | null;
   openFile: OakFile | null;
   readOnly: boolean;
+  editing: boolean;
+  commitFile: boolean;
 }
 
 export type SetMainState = React.Dispatch<React.SetStateAction<MainState>>;

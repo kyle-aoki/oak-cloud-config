@@ -78,6 +78,7 @@ export const TextEditorCenter = styled(Root)`
   align-items: center;
   justify-content: center;
   width: 100%;
+  font-size: 12px;
 `;
 export const TextEditorRightSide = styled(Root)`
   display: flex;
@@ -103,13 +104,14 @@ export const Inner = styled.div`
   position: absolute;
 `;
 
-export const MenuButton = styled.div`
+export const MenuButton = styled.div<{width?: number}>`
   display: flex;
   align-items: center;
   justify-content: center;
   user-select: none;
   height: 20px;
   min-width: 32px;
+  width: ${ ({width}) => Boolean(width) ? `${width}px` : 'auto' };
   background-color: #393ed7;
   border-radius: 3px;
   padding: 0 8px;

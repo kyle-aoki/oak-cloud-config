@@ -30,7 +30,9 @@ export default function App() {
     fileClicked: null,
     folderClicked: null,
     openFile: null,
-    readOnly: true
+    readOnly: true,
+    editing: false,
+    commitFile: false
   });
 
   const mainHooks = new MainHooks(state, setState);
@@ -39,6 +41,7 @@ export default function App() {
 
   mainHooks.useLoadFile();
   mainHooks.useLoadDirectory();
+  mainHooks.useCommitFile();
 
   console.log(state);
 
@@ -49,11 +52,14 @@ export default function App() {
       <AppBodyPane>
         <WorkbenchPane>
           <WorkBenchControl>
-            <MenuButton onClick={() => workbench.changeDirDown()}>..</MenuButton>
+            <MenuButton
+              onClick={() => workbench.changeDirDown()}>..</MenuButton>
           </WorkBenchControl>
           {
             state.objects.map((obj, idx) => {
-              return <WorkbenchObject key={idx} object={obj} openObject={state.fileClicked} workbench={workbench} />;
+              return <WorkbenchObject key={idx} object={obj}
+                                      openObject={state.fileClicked}
+                                      workbench={workbench} />;
             })
           }
         </WorkbenchPane>
@@ -61,12 +67,29 @@ export default function App() {
           <TextEditorBar>
             <TextEditorLeftSide>
               <MenuButton>copy</MenuButton>
-              <Chip visible={textEditor.state.readOnly}>Read Only</Chip>
+              <Chip
+                visible={Boolean(state.openFile) && state.readOnly}
+              >read-only</Chip>
             </TextEditorLeftSide>
-            <TextEditorCenter>{state.fileClicked?.name}</TextEditorCenter>
+            <TextEditorCenter></TextEditorCenter>
             <TextEditorRightSide>
-              <MenuButton>new version</MenuButton>
-              <Chip visible={Boolean(state.openFile)}>v{state.openFile?.version}</Chip>
+              {
+                state.editing ?
+                  <MenuButton
+                    width={150}
+                    onClick={() => textEditor.commit()}
+                  >commit</MenuButton>
+                  :
+                  <MenuButton
+                    width={150}
+                    onClick={() => textEditor.newVersion()}
+                  >
+                    new version
+                  </MenuButton>
+              }
+              <Chip visible={Boolean(state.openFile)}>
+                v{state.openFile?.version}
+              </Chip>
             </TextEditorRightSide>
           </TextEditorBar>
           <Outer>
@@ -76,8 +99,8 @@ export default function App() {
                 theme="vs-dark"
                 defaultLanguage="json"
                 defaultValue=""
-                value={textEditor.state.openFile?.content || ""}
-                options={{ readOnly: textEditor.state.readOnly }}
+                value={state.openFile?.content || ""}
+                options={{ readOnly: state.readOnly }}
               />
             </Inner>
           </Outer>

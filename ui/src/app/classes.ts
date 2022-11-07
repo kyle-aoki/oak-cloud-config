@@ -35,6 +35,21 @@ export class MainHooks extends Stateful<MainState, SetMainState> {
     }, [this.state.fileClicked]);
   };
 
+  useCommitFile = () => {
+    useEffect(() => {
+      (async () => {
+        if (!this.state.commitFile) return;
+        if (!this.state.openFile) return;
+        await OakApi.upgradeFile(this.state.openFile);
+        this.setState({
+          ...this.state,
+          commitFile: false,
+          editing: false,
+        })
+      })();
+    }, [this.state.commitFile]);
+  }
+
 }
 
 export class Workbench extends Stateful<MainState, SetMainState> {
@@ -42,11 +57,21 @@ export class Workbench extends Stateful<MainState, SetMainState> {
   onObjectClick(object: OakObject) {
     if (this.state.loading) return;
     if (object.isFile) {
-      this.setState({ ...this.state, loading: true, fileClicked: object, readOnly: true });
+      this.setState({
+        ...this.state,
+        loading: true,
+        fileClicked: object,
+        readOnly: true
+      });
       return;
     }
     const path = [...this.state.path, object.name];
-    this.setState({ ...this.state, loading: true, folderClicked: object, path });
+    this.setState({
+      ...this.state,
+      loading: true,
+      folderClicked: object,
+      path
+    });
   }
 
   changeDirDown() {
@@ -61,6 +86,16 @@ export class Workbench extends Stateful<MainState, SetMainState> {
 export class TextEditor extends Stateful<MainState, SetMainState> {
 
   newVersion() {
+    if (!this.state.openFile || !this.state.openFile.version) return;
+    this.setState({
+      ...this.state,
+      editing: true,
+      readOnly: false,
+      openFile: {
+        ...this.state.openFile,
+        version: this.state.openFile.version + 1
+      }
+    })
   }
 
   onTextEditorChange(str: string | undefined) {
@@ -68,7 +103,19 @@ export class TextEditor extends Stateful<MainState, SetMainState> {
     if (this.state.openFile === null) return;
     if (this.state.readOnly) return;
     this.state.openFile.content = str;
-    this.setState({ ...this.state, openFile: { ...this.state.openFile, content: str } });
+    this.setState({
+      ...this.state,
+      openFile: { ...this.state.openFile, content: str }
+    });
+  }
+
+  commit() {
+    if (this.state.commitFile) return;
+    this.setState({
+      ...this.state,
+      commitFile: true,
+      readOnly: true,
+    });
   }
 
   turnOnReadOnly() {
