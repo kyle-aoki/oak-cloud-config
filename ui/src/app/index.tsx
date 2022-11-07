@@ -6,9 +6,11 @@ import {
   AppBodyPane,
   AppPane,
   Chip,
+  CommitButton,
   Inner,
   MenuButton,
   Navbar,
+  NewVersionButton,
   Outer,
   PathBar,
   TextEditorBar,
@@ -47,7 +49,7 @@ export default function App() {
 
   return (
     <AppPane>
-      <Navbar>oak cloud config</Navbar>
+      <Navbar>TeamSafe Cloud Config</Navbar>
       <PathBar>{`/${state.path.join("/")}`}</PathBar>
       <AppBodyPane>
         <WorkbenchPane>
@@ -70,26 +72,27 @@ export default function App() {
               <Chip
                 visible={Boolean(state.openFile) && state.readOnly}
               >read-only</Chip>
+              <Chip visible={Boolean(state.openFile)}>
+                v{state.openFile?.version}
+              </Chip>
             </TextEditorLeftSide>
             <TextEditorCenter></TextEditorCenter>
             <TextEditorRightSide>
               {
                 state.editing ?
-                  <MenuButton
-                    width={150}
-                    onClick={() => textEditor.commit()}
-                  >commit</MenuButton>
+                  <>
+                    <CommitButton
+                      onClick={() => textEditor.commit()}>commit
+                    </CommitButton>
+                    <CommitButton
+                      onClick={() => {}}>cancel
+                    </CommitButton>
+                  </>
                   :
-                  <MenuButton
-                    width={150}
-                    onClick={() => textEditor.newVersion()}
-                  >
-                    new version
-                  </MenuButton>
+                  <NewVersionButton onClick={() => textEditor.newVersion()}>new
+                    version
+                  </NewVersionButton>
               }
-              <Chip visible={Boolean(state.openFile)}>
-                v{state.openFile?.version}
-              </Chip>
             </TextEditorRightSide>
           </TextEditorBar>
           <Outer>

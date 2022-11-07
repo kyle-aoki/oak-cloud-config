@@ -1,5 +1,12 @@
 import styled from "styled-components";
-import { BorderColor, ChipBg, GrayBackground, LightGrayBackground } from "../constants";
+import {
+  BorderColor,
+  ChipBg,
+  CommitButtonBg,
+  GrayBackground,
+  LightGrayBackground,
+  MenuButtonBg
+} from "../constants";
 
 export const Root = styled.div`
     /* border: 1px solid ${BorderColor}; */
@@ -104,14 +111,13 @@ export const Inner = styled.div`
   position: absolute;
 `;
 
-export const MenuButton = styled.div<{width?: number}>`
+export const MenuButton = styled.div<{ width?: number }>`
   display: flex;
   align-items: center;
   justify-content: center;
   user-select: none;
   height: 20px;
   min-width: 32px;
-  width: ${ ({width}) => Boolean(width) ? `${width}px` : 'auto' };
   background-color: #393ed7;
   border-radius: 3px;
   padding: 0 8px;
@@ -123,6 +129,18 @@ export const MenuButton = styled.div<{width?: number}>`
   &:active {
     background-color: #1f25e1;
   }
+`;
+export const NewVersionButton = styled(MenuButton)`
+  width: 150px;
+  background-color: ${MenuButtonBg};
+`;
+export const CancelButton = styled(MenuButton)`
+  width: 150px;
+  background-color: ${CommitButtonBg};
+`;
+export const CommitButton = styled(MenuButton)`
+  width: 150px;
+  background-color: ${CommitButtonBg};
 `;
 export const Chip = styled.div<{ visible: boolean }>`
   visibility: ${({ visible }) => visible ? "visible" : "hidden"};
