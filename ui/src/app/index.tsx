@@ -26,6 +26,7 @@ import {
   WritingChip
 } from "./styled-components";
 import { WorkbenchObject } from "../workbench-object";
+import StatePane from "../state-pane";
 
 export default function App() {
 
@@ -39,7 +40,8 @@ export default function App() {
     openFile: null,
     readOnly: true,
     editing: false,
-    commitFile: false
+    commitFile: false,
+    cancelChange: false,
   });
 
   const mainHooks = new MainHooks(state, setState);
@@ -49,94 +51,101 @@ export default function App() {
   mainHooks.useLoadFile();
   mainHooks.useLoadDirectory();
   mainHooks.useCommitFile();
+  mainHooks.useCancelChange()
 
   console.log(state);
 
   return (
-    <AppPane>
-      <Navbar>TeamSafe Cloud Config</Navbar>
-      <PathBar>{`/${state.path.join("/")}`}</PathBar>
-      <AppBodyPane>
-        <WorkbenchPane>
-          <WorkBenchControl>
-            <MenuButton
-              onClick={() => workbench.changeDirDown()}>..</MenuButton>
-          </WorkBenchControl>
-          {
-            state.objects.map((obj, idx) => {
-              return <WorkbenchObject key={idx} object={obj}
-                                      openObject={state.fileClicked}
-                                      workbench={workbench} />;
-            })
-          }
-        </WorkbenchPane>
-        <TextEditorPane>
-          <TextEditorBar>
-            <TextEditorLeftSide>
-              {Boolean(state.openFile) && <MenuButton>copy</MenuButton>}
-              <>
+    <>
+      {/*<StatePane state={state} />*/}
+      <AppPane>
+        <Navbar>TeamSafe Cloud Config</Navbar>
+        <PathBar>{`/${state.path.join("/")}`}</PathBar>
+        <AppBodyPane>
+          <WorkbenchPane>
+            <WorkBenchControl>
+              <MenuButton
+                onClick={() => workbench.changeDirDown()}>..</MenuButton>
+            </WorkBenchControl>
+            {
+              state.objects.map((obj, idx) => {
+                return <WorkbenchObject key={idx} object={obj}
+                                        openObject={state.fileClicked}
+                                        workbench={workbench} />;
+              })
+            }
+          </WorkbenchPane>
+          <TextEditorPane>
+            <TextEditorBar>
+              <TextEditorLeftSide>
+                {Boolean(state.openFile) && <MenuButton>copy</MenuButton>}
+                <>
+                  {
+                    Boolean(state.openFile) &&
+                    (state.readOnly ?
+                      <ReadOnlyChip>read-only</ReadOnlyChip>
+                      :
+                      <WritingChip>writing</WritingChip>)
+                  }
+                  {
+                    state.editing &&
+                    <>
+                      <NewVersionChip>
+                        v{state.openFile?.version as number - 1} {"-->"} v{state.openFile?.version}
+                      </NewVersionChip>
+                    </>
+                  }
+                  {
+                    state.openFile && !state.editing &&
+                    <>
+                      <Chip>
+                        v{state.openFile?.version}
+                      </Chip>
+                    </>
+                  }
+                </>
+              </TextEditorLeftSide>
+              <TextEditorCenter></TextEditorCenter>
+              <TextEditorRightSide>
                 {
                   Boolean(state.openFile) &&
-                  (state.readOnly ?
-                    <ReadOnlyChip>read-only</ReadOnlyChip>
-                    :
-                    <WritingChip>writing</WritingChip>)
+                  (
+                    state.editing ?
+                      <>
+                        <CommitButton
+                          $committed={state.commitFile}
+                          onClick={() => textEditor.commit()}
+                        >
+                          commit
+                        </CommitButton>
+                        <CancelButton onClick={() => textEditor.cancel()}>
+                          cancel
+                        </CancelButton>
+                      </>
+                      :
+                      <NewVersionButton onClick={() => textEditor.newVersion()}>
+                        new version
+                      </NewVersionButton>
+                  )
                 }
-                {
-                  state.editing &&
-                  <>
-                    <NewVersionChip>
-                      v{state.openFile?.version as number - 1} {"-->"} v{state.openFile?.version}
-                    </NewVersionChip>
-                  </>
-                }
-                {
-                  state.openFile && !state.editing &&
-                  <>
-                    <Chip>
-                      v{state.openFile?.version}
-                    </Chip>
-                  </>
-                }
-              </>
-            </TextEditorLeftSide>
-            <TextEditorCenter></TextEditorCenter>
-            <TextEditorRightSide>
-              {
-                Boolean(state.openFile) &&
-                (
-                  state.editing ?
-                    <>
-                      <CommitButton
-                        onClick={() => textEditor.commit()}>commit
-                      </CommitButton>
-                      <CancelButton
-                        onClick={() => textEditor.cancel()}>cancel
-                      </CancelButton>
-                    </>
-                    :
-                    <NewVersionButton onClick={() => textEditor.newVersion()}>new
-                      version
-                    </NewVersionButton>
-                )
-              }
-            </TextEditorRightSide>
-          </TextEditorBar>
-          <Outer>
-            <Inner>
-              <Editor
-                onChange={(str) => textEditor.onTextEditorChange(str)}
-                theme="vs-dark"
-                defaultLanguage="json"
-                defaultValue=""
-                value={state.openFile?.content || ""}
-                options={{ readOnly: state.readOnly }}
-              />
-            </Inner>
-          </Outer>
-        </TextEditorPane>
-      </AppBodyPane>
-    </AppPane>
+              </TextEditorRightSide>
+            </TextEditorBar>
+            <Outer>
+              <Inner>
+                <Editor
+                  onChange={(str) => textEditor.onTextEditorChange(str)}
+                  theme="vs-dark"
+                  defaultLanguage="json"
+                  defaultValue=""
+                  value={state.openFile?.content || ""}
+                  options={{ readOnly: state.readOnly }}
+                />
+              </Inner>
+            </Outer>
+          </TextEditorPane>
+        </AppBodyPane>
+      </AppPane>
+    </>
   );
 }
 

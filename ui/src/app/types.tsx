@@ -11,6 +11,7 @@ export interface MainState {
   readOnly: boolean;
   editing: boolean;
   commitFile: boolean;
+  cancelChange: boolean;
 }
 
 export type SetMainState = React.Dispatch<React.SetStateAction<MainState>>;

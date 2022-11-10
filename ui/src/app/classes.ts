@@ -50,6 +50,23 @@ export class MainHooks extends Stateful<MainState, SetMainState> {
     }, [this.state.commitFile]);
   };
 
+  useCancelChange = () => {
+    useEffect(() => {
+      (async () => {
+        if (!this.state.openFile) return;
+        if (!this.state.cancelChange) return;
+        this.setState({
+          ...this.state,
+          cancelChange: false,
+          openFile: {
+            ...this.state.openFile,
+            content: this.state.oldContent
+          }
+        });
+      })()
+    }, [this.state.cancelChange])
+  };
+
 }
 
 export class Workbench extends Stateful<MainState, SetMainState> {
@@ -107,7 +124,10 @@ export class TextEditor extends Stateful<MainState, SetMainState> {
     this.state.openFile.content = str;
     this.setState({
       ...this.state,
-      openFile: { ...this.state.openFile, content: str }
+      openFile: {
+        ...this.state.openFile,
+        content: str
+      }
     });
   }
 
@@ -128,9 +148,9 @@ export class TextEditor extends Stateful<MainState, SetMainState> {
       ...this.state,
       readOnly: true,
       editing: false,
+      cancelChange: true,
       openFile: {
         ...this.state.openFile,
-        content: this.state.oldContent,
         version: this.state.openFile.version - 1
       }
     });

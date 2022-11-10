@@ -1,11 +1,16 @@
 import styled from "styled-components";
 import {
-  BorderColor, CancelButtonBg,
+  BorderColor,
+  CancelButtonBg,
   ChipBg,
+  CommitButtonActiveBg,
   CommitButtonBg,
+  CommitButtonHoverBg,
   GrayBackground,
   LightGrayBackground,
-  MenuButtonBg, NewVersionChipBg, WritingChipBg
+  MenuButtonBg,
+  NewVersionChipBg,
+  WritingChipBg
 } from "../constants";
 
 export const Root = styled.div`
@@ -138,9 +143,17 @@ export const CancelButton = styled(MenuButton)`
   width: 100px;
   background-color: ${CancelButtonBg};
 `;
-export const CommitButton = styled(MenuButton)`
+export const CommitButton = styled(MenuButton)<{ $committed: boolean }>`
   width: 100px;
-  background-color: ${CommitButtonBg};
+  background-color: ${({ $committed }) => $committed ? CommitButtonActiveBg : CommitButtonBg};
+
+  &:hover {
+    background-color: ${({ $committed }) => $committed ? CommitButtonActiveBg : CommitButtonHoverBg};
+  }
+
+  &:active {
+    background-color: ${CommitButtonActiveBg};
+  }
 `;
 export const Chip = styled.div`
   border-radius: 12px;
