@@ -13,3 +13,8 @@ export const CommitButtonActiveBg = "#00ff74";
 export const CancelButtonBg = "#e02727";
 export const WritingChipBg = '#3783ff';
 export const NewVersionChipBg = '#a19200';
+
+export const NewObjectInputColors = {
+  backgroundColor: '#424246',
+  color: 'white',
+}

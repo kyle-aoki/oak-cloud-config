@@ -2,6 +2,7 @@ import React from "react";
 
 export interface MainState {
   loading: boolean;
+  shouldRefreshWorkbench: boolean;
   path: string[];
   objects: OakObject[];
   fileClicked: OakObject | null;
@@ -12,6 +13,9 @@ export interface MainState {
   editing: boolean;
   commitFile: boolean;
   cancelChange: boolean;
+  creatingNewObject: boolean;
+  commitNewObject: boolean;
+  newObject: OakObject | null;
 }
 
 export type SetMainState = React.Dispatch<React.SetStateAction<MainState>>;

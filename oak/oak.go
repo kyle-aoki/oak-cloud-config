@@ -1,10 +1,10 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"time"
 
@@ -86,6 +86,14 @@ func MysqlConnectionString() string {
 	)
 }
 
+var db *sqlx.DB
+
+func InitializeDb() {
+	database := Must(sqlx.Connect("mysql", MysqlConnectionString()))
+	Check(database.Ping())
+	db = database
+}
+
 func main() {
 	defer func() {
 		if r := recover(); r != nil {
@@ -93,26 +101,19 @@ func main() {
 		}
 	}()
 	OakConfigure()
+	InitializeDb()
 
-	db, err := sqlx.Connect("mysql", MysqlConnectionString())
-	if err != nil {
-		log.Panicln(err)
-	}
-	err = db.Ping()
-	Check(err)
-
-	var ginMode string
 	if config.Debug {
-		ginMode = gin.DebugMode
+		gin.SetMode(gin.DebugMode)
 	} else {
-		ginMode = gin.ReleaseMode
+		gin.SetMode(gin.ReleaseMode)
+		gin.DefaultErrorWriter = ioutil.Discard
 	}
-	gin.SetMode(ginMode)
 
-	r := gin.Default()
-	r.Use(cors.Default())
+	engine := gin.Default()
+	engine.Use(cors.Default())
 
-	r.Use(func(ctx *gin.Context) {
+	engine.Use(func(ctx *gin.Context) {
 		n := rand.Intn(1000)
 		if n < 500 {
 			n = n + 500
@@ -121,29 +122,30 @@ func main() {
 		ctx.Next()
 	})
 
-	r.GET("/", func(ctx *gin.Context) {
+	engine.Use(gin.CustomRecovery(func(ctx *gin.Context, err any) {
+		ctx.JSON(400, map[string]any{"err": err})
+	}))
+
+	engine.GET("/", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
 			"message": "pong",
 		})
 	})
 
-	// /objects?path=/insurance
-	r.GET("/objects", func(ctx *gin.Context) {
-		path := ctx.Query("parent")
-		if len(path) == 0 {
-			path = "/"
+	// /objects?parent=/insurance
+	engine.GET("/objects", func(ctx *gin.Context) {
+		parent := ctx.Query("parent")
+		if len(parent) == 0 {
+			parent = "/"
 		}
-		var objs []OakObject
-		sql := `SELECT id, parent, name, is_file FROM object WHERE parent = ?`
-		stmt, err := db.Preparex(sql)
-		Check(err)
-		err = stmt.Select(&objs, path)
-		Check(err)
+		objs := []OakObject{}
+		stmt := Must(db.Preparex(`SELECT id, parent, name, is_file FROM object WHERE parent = ?`))
+		Check(stmt.Select(&objs, parent))
 		ctx.JSON(200, objs)
 	})
 
 	// /content?object=2
-	r.GET("/content", func(ctx *gin.Context) {
+	engine.GET("/content", func(ctx *gin.Context) {
 		objectId := ctx.Query("object")
 		if objectId == "" {
 			ctx.JSON(400, map[string]string{"message": "bad request"})
@@ -160,7 +162,7 @@ func main() {
 		ctx.JSON(200, oakFile)
 	})
 
-	r.POST("/upgrade", func(ctx *gin.Context) {
+	engine.POST("/upgrade", func(ctx *gin.Context) {
 		var oakFile OakFile
 		err := ctx.BindJSON(&oakFile)
 		Check(err)
@@ -179,8 +181,66 @@ func main() {
 		ctx.JSON(200, nil)
 	})
 
-	err = r.Run()
+	engine.POST("/new-file", func(ctx *gin.Context) {
+		var oakObject OakObject
+		Check(ctx.BindJSON(&oakObject))
+		if len(oakObject.Name) == 0 {
+			panic("invalid file name")
+		}
+		if !oakObject.IsFile {
+			panic("cannot create folder in new-file route")
+		}
+		tx := TxBegin(db)
+		stmt := Prepare(tx, `INSERT INTO object (parent, name, is_file) VALUES (?, ?, TRUE)`)
+		objectId := Exec(stmt, oakObject.Parent, oakObject.Name)
+		stmt = Prepare(tx, `INSERT INTO file (content, version, is_committed) VALUES ('', 0, TRUE)`)
+		fileId := Exec(stmt)
+		stmt = Prepare(tx, `INSERT INTO object_file (object_id, file_id) VALUES (?, ?)`)
+		_ = Exec(stmt, objectId, fileId)
+		oakObject.Id = uint64(objectId)
+		TxCommit(tx)
+		ctx.JSON(200, oakObject)
+	})
+
+	engine.POST("/new-folder", func(ctx *gin.Context) {
+		var oakObject OakObject
+		Check(ctx.BindJSON(&oakObject))
+		if len(oakObject.Name) == 0 {
+			panic("invalid folder name")
+		}
+		if oakObject.IsFile {
+			panic("cannot create file in new folder route")
+		}
+		stmt := Must(db.Preparex(`INSERT INTO object (parent, name, is_file) VALUES (?, ?, FALSE)`))
+		res := Must(stmt.Exec(oakObject.Parent, oakObject.Name))
+		objectId := Must(res.LastInsertId())
+		oakObject.Id = uint64(objectId)
+		ctx.JSON(200, oakObject)
+	})
+
+	Check(engine.Run())
+}
+
+func TxBegin(db *sqlx.DB) *sqlx.Tx {
+	return Must(db.BeginTxx(context.Background(), nil))
+}
+
+func TxCommit(tx *sqlx.Tx) {
+	Check(tx.Commit())
+}
+
+func Prepare(tx *sqlx.Tx, sql string) (stmt *sqlx.Stmt) {
+	return Must(tx.Preparex(sql))
+}
+
+func Exec(stmt *sqlx.Stmt, args ...any) (id int64) {
+	res := Must(stmt.Exec(args...))
+	return Must(res.LastInsertId())
+}
+
+func Must[T any](t T, err error) T {
 	Check(err)
+	return t
 }
 
 type OakUser struct {

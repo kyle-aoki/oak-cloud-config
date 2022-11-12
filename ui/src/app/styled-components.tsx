@@ -177,3 +177,14 @@ export const VersionChip = styled(Chip)``;
 export const NewVersionChip = styled(Chip)`
   background-color: ${NewVersionChipBg};
 `;
+
+export const EmptyWorkbench = styled.div`
+  user-select: none;
+  padding-top: 10px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: gray;
+`;
+

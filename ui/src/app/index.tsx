@@ -1,13 +1,14 @@
 import Editor from "@monaco-editor/react";
 import React, { useState } from "react";
 import { MainState } from "./types";
-import { MainHooks, TextEditor, Workbench } from "./classes";
+import { MainHooks, NewObjectCreator, TextEditor, Workbench } from "./classes";
 import {
   AppBodyPane,
   AppPane,
   CancelButton,
   Chip,
   CommitButton,
+  EmptyWorkbench,
   Inner,
   MenuButton,
   Navbar,
@@ -23,111 +24,135 @@ import {
   TextEditorRightSide,
   WorkBenchControl,
   WorkbenchPane,
-  WritingChip
+  WritingChip,
 } from "./styled-components";
 import { WorkbenchObject } from "../workbench-object";
-import StatePane from "../state-pane";
+import { NewObject } from "../workbench-object/new-object";
 
 export default function App() {
-
   const [state, setState] = useState<MainState>({
-    loading: false,
     path: [],
     objects: [],
-    fileClicked: null,
-    folderClicked: null,
-    oldContent: "",
-    openFile: null,
+
+    loading: false,
+    shouldRefreshWorkbench: false,
     readOnly: true,
     editing: false,
     commitFile: false,
     cancelChange: false,
+    creatingNewObject: false,
+    commitNewObject: false,
+
+    oldContent: "",
+
+    fileClicked: null,
+    openFile: null,
+    folderClicked: null,
+    newObject: null,
   });
 
   const mainHooks = new MainHooks(state, setState);
   const workbench = new Workbench(state, setState);
   const textEditor = new TextEditor(state, setState);
+  const newObjectCreator = new NewObjectCreator(state, setState);
 
   mainHooks.useLoadFile();
   mainHooks.useLoadDirectory();
   mainHooks.useCommitFile();
-  mainHooks.useCancelChange()
+  mainHooks.useCancelChange();
+  const ref = mainHooks.useFocusNewObjectInput();
+  mainHooks.useAcceptObjectNameWithEnterKeyWhileCreatingObject();
+  mainHooks.useCreateNewObject();
+  mainHooks.useShouldRefreshDirectory();
 
   console.log(state);
 
   return (
     <>
-      {/*<StatePane state={state} />*/}
       <AppPane>
         <Navbar>TeamSafe Cloud Config</Navbar>
         <PathBar>{`/${state.path.join("/")}`}</PathBar>
         <AppBodyPane>
           <WorkbenchPane>
             <WorkBenchControl>
+              <MenuButton onClick={() => workbench.changeDirDown()}>
+                ..
+              </MenuButton>
               <MenuButton
-                onClick={() => workbench.changeDirDown()}>..</MenuButton>
+                onClick={() => newObjectCreator.startCreating("folder")}
+              >
+                📁 +
+              </MenuButton>
+              <MenuButton
+                onClick={() => newObjectCreator.startCreating("file")}
+              >
+                📄 +
+              </MenuButton>
             </WorkBenchControl>
-            {
+            {state.creatingNewObject && (
+              <NewObject newObjectCreator={newObjectCreator} ref={ref} />
+            )}
+            {state.objects.length === 0 && state.path.length > 0 ? (
+              <EmptyWorkbench>empty</EmptyWorkbench>
+            ) : (
               state.objects.map((obj, idx) => {
-                return <WorkbenchObject key={idx} object={obj}
-                                        openObject={state.fileClicked}
-                                        workbench={workbench} />;
+                return (
+                  <WorkbenchObject
+                    key={idx}
+                    object={obj}
+                    openObject={state.fileClicked}
+                    workbench={workbench}
+                  />
+                );
               })
-            }
+            )}
           </WorkbenchPane>
           <TextEditorPane>
             <TextEditorBar>
               <TextEditorLeftSide>
                 {Boolean(state.openFile) && <MenuButton>copy</MenuButton>}
                 <>
-                  {
-                    Boolean(state.openFile) &&
-                    (state.readOnly ?
+                  {Boolean(state.openFile) &&
+                    (state.readOnly ? (
                       <ReadOnlyChip>read-only</ReadOnlyChip>
-                      :
-                      <WritingChip>writing</WritingChip>)
-                  }
-                  {
-                    state.editing &&
+                    ) : (
+                      <WritingChip>writing</WritingChip>
+                    ))}
+                  {state.editing && (
                     <>
                       <NewVersionChip>
-                        v{state.openFile?.version as number - 1} {"-->"} v{state.openFile?.version}
+                        v{(state.openFile?.version as number) - 1} {"-->"} v
+                        {state.openFile?.version}
                       </NewVersionChip>
                     </>
-                  }
-                  {
-                    state.openFile && !state.editing &&
+                  )}
+                  {state.openFile && !state.editing && (
                     <>
-                      <Chip>
-                        v{state.openFile?.version}
-                      </Chip>
+                      <Chip>v{state.openFile?.version}</Chip>
                     </>
-                  }
+                  )}
                 </>
               </TextEditorLeftSide>
               <TextEditorCenter></TextEditorCenter>
               <TextEditorRightSide>
-                {
-                  Boolean(state.openFile) &&
-                  (
-                    state.editing ?
-                      <>
-                        <CommitButton
-                          $committed={state.commitFile}
-                          onClick={() => textEditor.commit()}
-                        >
-                          commit
-                        </CommitButton>
-                        <CancelButton onClick={() => textEditor.cancel()}>
-                          cancel
-                        </CancelButton>
-                      </>
-                      :
-                      <NewVersionButton onClick={() => textEditor.newVersion()}>
-                        new version
-                      </NewVersionButton>
-                  )
-                }
+                {Boolean(state.openFile) &&
+                  (state.editing ? (
+                    <>
+                      <CommitButton
+                        $committed={state.commitFile}
+                        onClick={() => textEditor.commit()}
+                      >
+                        commit
+                      </CommitButton>
+                      <CancelButton onClick={() => textEditor.cancel()}>
+                        cancel
+                      </CancelButton>
+                    </>
+                  ) : (
+                    <NewVersionButton onClick={() => textEditor.newVersion()}>
+                      new version
+                    </NewVersionButton>
+                  ))}
               </TextEditorRightSide>
             </TextEditorBar>
             <Outer>
@@ -148,5 +173,3 @@ export default function App() {
     </>
   );
 }
-
-

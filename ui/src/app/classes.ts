@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { ChangeEvent, RefObject, useCallback, useEffect, useRef } from "react";
 import OakApi from "./oak-api";
 import { MainState, OakObject, SetMainState } from "./types";
+import { PathJoin } from "../util/path";
 
 export class Stateful<State, SetState> {
   state: State;
@@ -13,7 +14,6 @@ export class Stateful<State, SetState> {
 }
 
 export class MainHooks extends Stateful<MainState, SetMainState> {
-
   /** Update workbench when path changes. */
   useLoadDirectory = () => {
     useEffect(() => {
@@ -44,7 +44,7 @@ export class MainHooks extends Stateful<MainState, SetMainState> {
         this.setState({
           ...this.state,
           commitFile: false,
-          editing: false
+          editing: false,
         });
       })();
     }, [this.state.commitFile]);
@@ -60,17 +60,80 @@ export class MainHooks extends Stateful<MainState, SetMainState> {
           cancelChange: false,
           openFile: {
             ...this.state.openFile,
-            content: this.state.oldContent
-          }
+            content: this.state.oldContent,
+          },
         });
-      })()
-    }, [this.state.cancelChange])
+      })();
+    }, [this.state.cancelChange]);
   };
 
+  useFocusNewObjectInput = (): RefObject<HTMLInputElement> => {
+    const inputRef = useRef<HTMLInputElement>(null);
+    useEffect(() => {
+      if (inputRef === null || inputRef.current === null) return;
+      console.log("here");
+      inputRef.current.focus();
+    }, [inputRef, this.state.creatingNewObject]);
+    return inputRef;
+  };
+
+  useAcceptObjectNameWithEnterKeyWhileCreatingObject = () => {
+    const handleEnterPress = useCallback(
+      (event: KeyboardEvent) => {
+        console.log("callbacking");
+        if (event.key === "Enter") {
+          this.setState({
+            ...this.state,
+            creatingNewObject: false,
+            commitNewObject: true,
+          });
+        }
+      },
+      [this.state]
+    );
+    useEffect(() => {
+      window.addEventListener("keydown", handleEnterPress);
+      return () => {
+        window.removeEventListener("keydown", handleEnterPress);
+      };
+    }, [handleEnterPress]);
+  };
+
+  useCreateNewObject = () => {
+    useEffect(() => {
+      (async () => {
+        if (!this.state.commitNewObject) return;
+        if (this.state.newObject === null) return;
+        if (this.state.newObject.isFile) {
+          await OakApi.newFile(this.state.newObject);
+        } else {
+          await OakApi.newFolder(this.state.newObject);
+        }
+        this.setState({
+          ...this.state,
+          commitNewObject: false,
+          shouldRefreshWorkbench: true,
+        });
+      })();
+    }, [this.state.commitNewObject]);
+  };
+
+  useShouldRefreshDirectory = () => {
+    useEffect(() => {
+      (async () => {
+        if (!this.state.shouldRefreshWorkbench) return;
+        const objects = await OakApi.getObjects(this.state.path);
+        this.setState({
+          ...this.state,
+          shouldRefreshWorkbench: false,
+          objects,
+        });
+      })();
+    }, [this.state.shouldRefreshWorkbench]);
+  };
 }
 
 export class Workbench extends Stateful<MainState, SetMainState> {
-
   onObjectClick(object: OakObject) {
     if (this.state.loading) return;
     if (object.isFile) {
@@ -79,7 +142,7 @@ export class Workbench extends Stateful<MainState, SetMainState> {
         loading: true,
         fileClicked: object,
         editing: false,
-        readOnly: true
+        readOnly: true,
       });
       return;
     }
@@ -88,7 +151,7 @@ export class Workbench extends Stateful<MainState, SetMainState> {
       ...this.state,
       loading: true,
       folderClicked: object,
-      path
+      path,
     });
   }
 
@@ -102,7 +165,6 @@ export class Workbench extends Stateful<MainState, SetMainState> {
 }
 
 export class TextEditor extends Stateful<MainState, SetMainState> {
-
   newVersion() {
     if (!this.state.openFile || !this.state.openFile.version) return;
     this.setState({
@@ -112,8 +174,8 @@ export class TextEditor extends Stateful<MainState, SetMainState> {
       oldContent: this.state.openFile.content,
       openFile: {
         ...this.state.openFile,
-        version: this.state.openFile.version + 1
-      }
+        version: this.state.openFile.version + 1,
+      },
     });
   }
 
@@ -126,8 +188,8 @@ export class TextEditor extends Stateful<MainState, SetMainState> {
       ...this.state,
       openFile: {
         ...this.state.openFile,
-        content: str
-      }
+        content: str,
+      },
     });
   }
 
@@ -136,7 +198,7 @@ export class TextEditor extends Stateful<MainState, SetMainState> {
     this.setState({
       ...this.state,
       commitFile: true,
-      readOnly: true
+      readOnly: true,
     });
   }
 
@@ -151,15 +213,39 @@ export class TextEditor extends Stateful<MainState, SetMainState> {
       cancelChange: true,
       openFile: {
         ...this.state.openFile,
-        version: this.state.openFile.version - 1
-      }
+        version: this.state.openFile.version - 1,
+      },
+    });
+  }
+}
+
+export class NewObjectCreator extends Stateful<MainState, SetMainState> {
+  startCreating(objectType: "folder" | "file") {
+    this.setState({
+      ...this.state,
+      creatingNewObject: true,
+      newObject: {
+        id: 0,
+        name: "",
+        parent: PathJoin(this.state.path),
+        isFile: objectType === "file",
+      },
     });
   }
 
-  turnOnReadOnly() {
+  updateObjectName(e: ChangeEvent<HTMLInputElement>) {
+    if (this.state.newObject === null) return;
+    this.setState({
+      ...this.state,
+      newObject: { ...this.state.newObject, name: e.target.value },
+    });
   }
 
-  turnOffReadOnly() {
+  cancelCreating() {
+    this.setState({ ...this.state, creatingNewObject: false });
   }
 
+  commit() {
+    this.setState({ ...this.state, commitNewObject: true });
+  }
 }
