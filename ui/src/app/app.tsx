@@ -70,6 +70,7 @@ export default function App() {
               <MenuButton onClick={() => creatorInput.startCreating(workbench.state.path, "file")}>
                 📄 +
               </MenuButton>
+              <MenuButton>🗑️</MenuButton>
             </WorkBenchControl>
             {workbench.state.loading ? (
               <BarLoader width={"100%"} color={BarLoaderColor.color} height={2} />
@@ -79,17 +80,20 @@ export default function App() {
             {workbench.state.objects.length === 0 && workbench.state.path.length > 0 ? (
               <EmptyWorkbench>empty</EmptyWorkbench>
             ) : (
-              workbench.state.objects.map((obj, idx) => {
-                return (
-                  <WorkbenchObject
-                    key={idx}
-                    object={obj}
-                    openObject={workbench.state.fileClicked}
-                    workbench={workbench}
-                    textEditor={textEditor}
-                  />
-                );
-              })
+              workbench.state.objects
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .sort((a, b) => Number(a.isFile) - Number(b.isFile))
+                .map((obj, idx) => {
+                  return (
+                    <WorkbenchObject
+                      key={idx}
+                      object={obj}
+                      openObject={workbench.state.fileClicked}
+                      workbench={workbench}
+                      textEditor={textEditor}
+                    />
+                  );
+                })
             )}
             {creatorInput.state.creatingNewObject && (
               <NewObject creatorInput={creatorInput} ref={ref} />

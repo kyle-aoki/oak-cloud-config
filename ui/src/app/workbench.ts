@@ -32,6 +32,10 @@ export class Workbench extends Stateful<WorkbenchState> {
     this.setState({ ...this.state, loading: false });
   }
 
+  startLoading() {
+    this.setState({ ...this.state, loading: true });
+  }
+
   onObjectClick(object: OakObject) {
     if (object.isFile) this.onFileClick(object);
     else this.onFolderClick(object);
@@ -60,4 +64,6 @@ export class Workbench extends Stateful<WorkbenchState> {
     const path = [...this.state.path];
     this.setState({ ...this.state, loading: true, path });
   }
+
+
 }

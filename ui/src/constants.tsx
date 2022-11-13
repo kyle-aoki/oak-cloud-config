@@ -6,10 +6,14 @@ export const ObjectActive = "#323536";
 export const ObjectSelectedBg = "#2c7dc0";
 export const ObjectSelectedLoadingBg = "#1b5079";
 export const ChipBg = "#424246";
-export const MenuButtonBg = "#2e2ece";
-export const CommitButtonBg = "#34bd64";
-export const CommitButtonHoverBg = "#54ce83";
-export const CommitButtonActiveBg = "#00ff74";
+export const MenuButtonBg = "#2747c4";
+
+export const CommitButtonColor = {
+  CommitButtonBg: "#34bd64",
+  CommitButtonHoverBg: "#54ce83",
+  CommitButtonActiveBg: "#00ff74",
+}
+
 export const CancelButtonBg = "#e02727";
 export const WritingChipBg = '#3783ff';
 export const NewVersionChipBg = '#a19200';

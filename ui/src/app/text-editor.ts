@@ -28,7 +28,7 @@ export class TextEditor extends Stateful<TextEditorState> {
   }
 
   newVersion() {
-    if (!this.state.openFile || !this.state.openFile.version) return;
+    if (this.state.openFile === null) return;
     this.setState({
       ...this.state,
       editing: true,
@@ -45,7 +45,6 @@ export class TextEditor extends Stateful<TextEditorState> {
     if (str === undefined) return;
     if (this.state.openFile === null) return;
     if (this.state.readOnly) return;
-    this.state.openFile.content = str;
     this.setState({
       ...this.state,
       openFile: {

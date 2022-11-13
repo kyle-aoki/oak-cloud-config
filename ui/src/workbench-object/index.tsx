@@ -9,7 +9,7 @@ import { TextEditor } from "../app/text-editor";
 export const WorkbenchObject = ({
   object,
   workbench,
-  textEditor
+  textEditor,
 }: {
   object: OakObject;
   openObject: OakObject | null;
@@ -25,6 +25,7 @@ export const WorkbenchObject = ({
         workbench={workbench}
         textEditor={textEditor}
       >
+        {object.isFile ? "📄" : "📁"}{' '}
         {object.name}
       </ObjectPane>
     </>

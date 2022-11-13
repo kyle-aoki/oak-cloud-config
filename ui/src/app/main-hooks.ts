@@ -62,10 +62,12 @@ export class MainHooks {
   };
 
   useAcceptObjectNameWithEnterKeyWhileCreatingObject = () => {
+    if (!this.creatorInput.state.creatingNewObject) return;
     const handleEnterPress = useCallback(
       (event: KeyboardEvent) => {
         if (event.key === "Enter") {
           this.creatorInput.acceptObject();
+          this.workbench.startLoading();
         }
       },
       [this.creatorInput.state]
@@ -75,7 +77,7 @@ export class MainHooks {
       return () => {
         window.removeEventListener("keydown", handleEnterPress);
       };
-    }, [handleEnterPress]);
+    }, [handleEnterPress, this.creatorInput.state.creatingNewObject]);
   };
 
   useCreateNewObject = () => {
@@ -91,6 +93,7 @@ export class MainHooks {
         const objects = await OakApi.getObjects(this.workbench.state.path);
         await this.workbench.refreshDirectory(objects);
         await this.creatorInput.finishCreatingObject();
+        this.workbench.stopLoading();
       })();
     }, [this.creatorInput.state.commitNewObject]);
   };

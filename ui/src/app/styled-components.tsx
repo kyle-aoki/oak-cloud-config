@@ -3,14 +3,12 @@ import {
   BorderColor,
   CancelButtonBg,
   ChipBg,
-  CommitButtonActiveBg,
-  CommitButtonBg,
-  CommitButtonHoverBg,
+  CommitButtonColor,
   GrayBackground,
   LightGrayBackground,
   MenuButtonBg,
   NewVersionChipBg,
-  WritingChipBg
+  WritingChipBg,
 } from "../constants";
 
 export const Root = styled.div`
@@ -145,14 +143,14 @@ export const CancelButton = styled(MenuButton)`
 `;
 export const CommitButton = styled(MenuButton)<{ $committed: boolean }>`
   width: 100px;
-  background-color: ${({ $committed }) => $committed ? CommitButtonActiveBg : CommitButtonBg};
+  background-color: ${({ $committed }) => $committed ? CommitButtonColor.CommitButtonActiveBg : CommitButtonColor.CommitButtonBg};
 
   &:hover {
-    background-color: ${({ $committed }) => $committed ? CommitButtonActiveBg : CommitButtonHoverBg};
+    background-color: ${({ $committed }) => $committed ? CommitButtonColor.CommitButtonActiveBg : CommitButtonColor.CommitButtonHoverBg};
   }
 
   &:active {
-    background-color: ${CommitButtonActiveBg};
+    background-color: ${CommitButtonColor.CommitButtonActiveBg};
   }
 `;
 export const Chip = styled.div`
@@ -172,8 +170,6 @@ export const WritingChip = styled(Chip)`
   width: 80px;
   background-color: ${WritingChipBg};
 `;
-export const OldVersionChip = styled(Chip)``;
-export const VersionChip = styled(Chip)``;
 export const NewVersionChip = styled(Chip)`
   background-color: ${NewVersionChipBg};
 `;
