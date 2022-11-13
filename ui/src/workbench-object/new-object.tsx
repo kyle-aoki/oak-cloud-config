@@ -1,11 +1,11 @@
 import styled from "styled-components";
 import { NewObjectInputColors } from "../constants";
 import { ChangeEvent, ForwardedRef, forwardRef } from "react";
-import { NewObjectCreator } from "../app/classes";
+import { CreatorInput } from "../app/creator-input";
 
 export const NewObject = forwardRef(
   (
-    { newObjectCreator }: { newObjectCreator: NewObjectCreator },
+    { creatorInput }: { creatorInput: CreatorInput },
     ref: ForwardedRef<any>
   ) => {
     return (
@@ -14,7 +14,7 @@ export const NewObject = forwardRef(
           <NewObjectInput
             ref={ref}
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              newObjectCreator.updateObjectName(e)
+              creatorInput.updateObjectName(e)
             }
           />
         </NewObjectContainer>

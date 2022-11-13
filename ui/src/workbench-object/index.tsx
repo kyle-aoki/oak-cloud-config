@@ -1,27 +1,42 @@
 import { OakObject } from "../app/types";
-import { Workbench } from "../app/classes";
+
 import React, { ReactElement } from "react";
 import styled from "styled-components";
 import { GrayBackground, ObjectActive, ObjectHover, ObjectSelectedBg } from "../constants";
+import { Workbench } from "../app/workbench";
+import { TextEditor } from "../app/text-editor";
 
-export const WorkbenchObject = (
-  {
-    object,
-    workbench
-  }: { object: OakObject, openObject: OakObject | null, workbench: Workbench }): ReactElement => {
-  return <>
-    <ObjectPane
-      $loading={workbench.state.loading}
-      onClick={() => workbench.onObjectClick(object)}
-      object={object}
-      workbench={workbench}
-    >
-      {object.name}
-    </ObjectPane>
-  </>;
+export const WorkbenchObject = ({
+  object,
+  workbench,
+  textEditor
+}: {
+  object: OakObject;
+  openObject: OakObject | null;
+  workbench: Workbench;
+  textEditor: TextEditor;
+}): ReactElement => {
+  return (
+    <>
+      <ObjectPane
+        $loading={workbench.state.loading}
+        onClick={() => workbench.onObjectClick(object)}
+        object={object}
+        workbench={workbench}
+        textEditor={textEditor}
+      >
+        {object.name}
+      </ObjectPane>
+    </>
+  );
 };
 
-export const ObjectPane = styled.div<{ $loading: boolean, object: OakObject, workbench: Workbench }>`
+export const ObjectPane = styled.div<{
+  $loading: boolean;
+  object: OakObject;
+  workbench: Workbench;
+  textEditor: TextEditor;
+}>`
   padding-left: 10px;
   background-color: ${GrayBackground};
   color: white;
@@ -31,20 +46,28 @@ export const ObjectPane = styled.div<{ $loading: boolean, object: OakObject, wor
   padding-bottom: 2px;
   user-select: none;
 
-  background-color: ${({ $loading, object, workbench }) => {
-    if (object.id === workbench.state.openFile?.id) {
+  background-color: ${({ $loading, object, workbench, textEditor }) => {
+    if (object.id === textEditor.state.openFile?.id) {
       return ObjectSelectedBg;
     }
-    if ($loading && (object.id === workbench.state.folderClicked?.id || object.id === workbench.state.fileClicked?.id)) {
+    if (
+      $loading &&
+      (object.id === workbench.state.folderClicked?.id ||
+        object.id === workbench.state.fileClicked?.id)
+    ) {
       return ObjectActive;
     }
     return "transparent";
   }};
 
   &:hover {
-    background-color: ${({ $loading, object, workbench }) => {
-      if (object.id === workbench.state.openFile?.id) return ObjectSelectedBg;
-      if ($loading && (object.id === workbench.state.folderClicked?.id || object.id === workbench.state.fileClicked?.id)) {
+    background-color: ${({ $loading, object, workbench, textEditor }) => {
+      if (object.id === textEditor.state.openFile?.id) return ObjectSelectedBg;
+      if (
+        $loading &&
+        (object.id === workbench.state.folderClicked?.id ||
+          object.id === workbench.state.fileClicked?.id)
+      ) {
         return ObjectActive;
       }
       return ObjectHover;

@@ -18,3 +18,7 @@ export const NewObjectInputColors = {
   backgroundColor: '#424246',
   color: 'white',
 }
+
+export const BarLoaderColor = {
+  color: '#2c7dc0'
+}
