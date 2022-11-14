@@ -9,12 +9,12 @@ export const ChipBg = "#424246";
 export const MenuButtonBg = "#2747c4";
 
 export const CommitButtonColor = {
-  CommitButtonBg: "#34bd64",
-  CommitButtonHoverBg: "#54ce83",
-  CommitButtonActiveBg: "#00ff74",
+  CommitButtonBg: "#23934a",
+  CommitButtonHoverBg: "#30d36c",
+  CommitButtonActiveBg: "#0c562f",
 }
 
-export const CancelButtonBg = "#e02727";
+export const CancelButtonBg = "#9f1b1b";
 export const WritingChipBg = '#3783ff';
 export const NewVersionChipBg = '#a19200';
 

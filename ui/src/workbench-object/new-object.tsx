@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { NewObjectInputColors } from "../constants";
+import { NewObjectInputColors } from "../colors";
 import { ChangeEvent, ForwardedRef, forwardRef } from "react";
 import { CreatorInput } from "../app/creator-input";
 

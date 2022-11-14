@@ -2,19 +2,17 @@ import { OakObject } from "../app/types";
 
 import React, { ReactElement } from "react";
 import styled from "styled-components";
-import { GrayBackground, ObjectActive, ObjectHover, ObjectSelectedBg } from "../constants";
+import { GrayBackground, ObjectActive, ObjectHover, ObjectSelectedBg } from "../colors";
 import { Workbench } from "../app/workbench";
 import { TextEditor } from "../app/text-editor";
 
 export const WorkbenchObject = ({
   object,
   workbench,
-  textEditor,
 }: {
   object: OakObject;
   openObject: OakObject | null;
   workbench: Workbench;
-  textEditor: TextEditor;
 }): ReactElement => {
   return (
     <>
@@ -23,7 +21,6 @@ export const WorkbenchObject = ({
         onClick={() => workbench.onObjectClick(object)}
         object={object}
         workbench={workbench}
-        textEditor={textEditor}
       >
         {object.isFile ? "📄" : "📁"}{' '}
         {object.name}
@@ -36,7 +33,6 @@ export const ObjectPane = styled.div<{
   $loading: boolean;
   object: OakObject;
   workbench: Workbench;
-  textEditor: TextEditor;
 }>`
   padding-left: 10px;
   background-color: ${GrayBackground};
@@ -47,8 +43,8 @@ export const ObjectPane = styled.div<{
   padding-bottom: 2px;
   user-select: none;
 
-  background-color: ${({ $loading, object, workbench, textEditor }) => {
-    if (object.id === textEditor.state.openFile?.id) {
+  background-color: ${({ $loading, object, workbench }) => {
+    if (object.id === workbench.state.fileClicked?.id) {
       return ObjectSelectedBg;
     }
     if (
@@ -62,8 +58,8 @@ export const ObjectPane = styled.div<{
   }};
 
   &:hover {
-    background-color: ${({ $loading, object, workbench, textEditor }) => {
-      if (object.id === textEditor.state.openFile?.id) return ObjectSelectedBg;
+    background-color: ${({ $loading, object, workbench }) => {
+      if (object.id === workbench.state.fileClicked?.id) return ObjectSelectedBg;
       if (
         $loading &&
         (object.id === workbench.state.folderClicked?.id ||

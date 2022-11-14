@@ -37,21 +37,22 @@ export class Workbench extends Stateful<WorkbenchState> {
   }
 
   onObjectClick(object: OakObject) {
-    if (object.isFile) this.onFileClick(object);
-    else this.onFolderClick(object);
+    object.isFile ? this.onFileClick(object) : this.onFolderClick(object);
   }
 
   private onFolderClick(object: OakObject) {
     if (this.state.loading) return;
     const path = [...this.state.path, object.name];
-    this.setState({ ...this.state, loading: true, folderClicked: object, path });
+    this.setState({ ...this.state, loading: true, fileClicked: null, folderClicked: object, path });
   }
 
   private onFileClick(object: OakObject) {
     if (this.state.loading) return;
+    if (this.state.fileClicked && this.state.fileClicked.id === object.id) return;
     this.setState({
       ...this.state,
       loading: true,
+      folderClicked: null,
       fileClicked: object,
     });
     return;
@@ -64,6 +65,4 @@ export class Workbench extends Stateful<WorkbenchState> {
     const path = [...this.state.path];
     this.setState({ ...this.state, loading: true, path });
   }
-
-
 }

@@ -26,13 +26,13 @@ import {
   WorkbenchPane,
   WritingChip,
 } from "./styled-components";
-import { WorkbenchObject } from "../workbench-object";
+import { WorkbenchObject } from "../workbench-object/wbo";
 import { NewObject } from "../workbench-object/new-object";
 import { initWorkbench, Workbench, WorkbenchState } from "./workbench";
 import { initTextEditor, TextEditor, TextEditorState } from "./text-editor";
 import { CreatorInput, CreatorInputState, initCreatorInput } from "./creator-input";
-import { BarLoader } from "react-spinners";
-import { BarLoaderColor } from "../constants";
+import { BarLoader, ScaleLoader } from "react-spinners";
+import { BarLoaderColor } from "../colors";
 
 export default function App() {
   const workbench = new Workbench(useState<WorkbenchState>(initWorkbench));
@@ -63,11 +63,11 @@ export default function App() {
             <WorkBenchControl>
               <MenuButton onClick={() => workbench.changeDirDown()}>..</MenuButton>
               <MenuButton
-                onClick={() => creatorInput.startCreating(workbench.state.path, "folder")}
+                onClick={() => creatorInput.startFolderCreation(workbench.state.path)}
               >
                 📁 +
               </MenuButton>
-              <MenuButton onClick={() => creatorInput.startCreating(workbench.state.path, "file")}>
+              <MenuButton onClick={() => creatorInput.startFileCreation(workbench.state.path)}>
                 📄 +
               </MenuButton>
               <MenuButton>🗑️</MenuButton>
@@ -83,14 +83,13 @@ export default function App() {
               workbench.state.objects
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .sort((a, b) => Number(a.isFile) - Number(b.isFile))
-                .map((obj, idx) => {
+                .map((obj) => {
                   return (
                     <WorkbenchObject
-                      key={idx}
+                      key={obj.id}
                       object={obj}
                       openObject={workbench.state.fileClicked}
                       workbench={workbench}
-                      textEditor={textEditor}
                     />
                   );
                 })
@@ -102,7 +101,7 @@ export default function App() {
           <TextEditorPane>
             <TextEditorBar>
               <TextEditorLeftSide>
-                {Boolean(textEditor.state.openFile) && <MenuButton>copy</MenuButton>}
+                {Boolean(textEditor.state.openFile) && <MenuButton>📋</MenuButton>}
                 <>
                   {Boolean(textEditor.state.openFile) &&
                     (textEditor.state.readOnly ? (
@@ -131,27 +130,35 @@ export default function App() {
                         $committed={textEditor.state.commitFile}
                         onClick={() => textEditor.commit()}
                       >
-                        commit
+                        {textEditor.state.commitFile ? (
+                          <ScaleLoader height={8} width={6} color={"white"} speedMultiplier={2} />
+                        ) : (
+                          "commit"
+                        )}
                       </CommitButton>
                       <CancelButton onClick={() => textEditor.cancel()}>cancel</CancelButton>
                     </>
                   ) : (
                     <NewVersionButton onClick={() => textEditor.newVersion()}>
-                      new version
+                      New Version
                     </NewVersionButton>
                   ))}
               </TextEditorRightSide>
             </TextEditorBar>
             <Outer>
               <Inner>
-                <Editor
-                  onChange={(str) => textEditor.onTextEditorChange(str)}
-                  theme="vs-dark"
-                  defaultLanguage="json"
-                  defaultValue=""
-                  value={textEditor.state.openFile?.content || ""}
-                  options={{ readOnly: textEditor.state.readOnly }}
-                />
+                {Boolean(textEditor.state.openFile) ? (
+                  <Editor
+                    onChange={(str) => textEditor.onTextEditorChange(str)}
+                    theme="vs-dark"
+                    defaultLanguage="json"
+                    defaultValue=""
+                    value={textEditor.state.openFile?.content || ""}
+                    options={{ readOnly: textEditor.state.readOnly }}
+                  />
+                ) : (
+                  <></>
+                )}
               </Inner>
             </Outer>
           </TextEditorPane>

@@ -26,7 +26,7 @@ export class CreatorInput extends Stateful<CreatorInputState> {
     this.setState({ ...this.state, creatingNewObject: false, commitNewObject: true });
   }
 
-  startCreating(path: string[], objectType: "folder" | "file") {
+  startFileCreation(path: string[]) {
     this.setState({
       ...this.state,
       creatingNewObject: true,
@@ -34,7 +34,19 @@ export class CreatorInput extends Stateful<CreatorInputState> {
         id: 0,
         name: "",
         parent: PathJoin(path),
-        isFile: objectType === "file",
+        isFile: true,
+      },
+    });
+  }
+  startFolderCreation(path: string[]) {
+    this.setState({
+      ...this.state,
+      creatingNewObject: true,
+      newObject: {
+        id: 0,
+        name: "",
+        parent: PathJoin(path),
+        isFile: false,
       },
     });
   }

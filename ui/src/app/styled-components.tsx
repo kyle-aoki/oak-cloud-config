@@ -9,7 +9,7 @@ import {
   MenuButtonBg,
   NewVersionChipBg,
   WritingChipBg,
-} from "../constants";
+} from "../colors";
 
 export const Root = styled.div`
     /* border: 1px solid ${BorderColor}; */
