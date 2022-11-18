@@ -1,4 +1,4 @@
-import { OakFile } from "./types";
+import { OakFile } from "../app/types";
 import { Stateful } from "../util/stateful-class";
 
 export interface TextEditorState {
@@ -18,7 +18,6 @@ export const initTextEditor: TextEditorState = {
 };
 
 export class TextEditor extends Stateful<TextEditorState> {
-
   loadFile(file: OakFile) {
     this.setState({ ...this.state, openFile: file });
   }

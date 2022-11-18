@@ -38,6 +38,7 @@ export class CreatorInput extends Stateful<CreatorInputState> {
       },
     });
   }
+
   startFolderCreation(path: string[]) {
     this.setState({
       ...this.state,

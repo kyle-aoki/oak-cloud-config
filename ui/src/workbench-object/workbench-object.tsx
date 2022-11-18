@@ -3,13 +3,12 @@ import { OakObject } from "../app/types";
 import React, { ReactElement } from "react";
 import styled from "styled-components";
 import { GrayBackground, ObjectActive, ObjectHover, ObjectSelectedBg } from "../colors";
-import { Workbench } from "../app/workbench";
-import { TextEditor } from "../app/text-editor";
+import { Workbench } from "../workbench/class";
 
 export const WorkbenchObject = ({
-  object,
-  workbench,
-}: {
+                                  object,
+                                  workbench,
+                                }: {
   object: OakObject;
   openObject: OakObject | null;
   workbench: Workbench;
@@ -22,8 +21,7 @@ export const WorkbenchObject = ({
         object={object}
         workbench={workbench}
       >
-        {object.isFile ? "📄" : "📁"}{' '}
-        {object.name}
+        {object.isFile ? "📄" : "📁"} {object.name}
       </ObjectPane>
     </>
   );
@@ -48,9 +46,9 @@ export const ObjectPane = styled.div<{
       return ObjectSelectedBg;
     }
     if (
-      $loading &&
-      (object.id === workbench.state.folderClicked?.id ||
-        object.id === workbench.state.fileClicked?.id)
+            $loading &&
+            (object.id === workbench.state.folderClicked?.id ||
+                    object.id === workbench.state.fileClicked?.id)
     ) {
       return ObjectActive;
     }
@@ -61,9 +59,9 @@ export const ObjectPane = styled.div<{
     background-color: ${({ $loading, object, workbench }) => {
       if (object.id === workbench.state.fileClicked?.id) return ObjectSelectedBg;
       if (
-        $loading &&
-        (object.id === workbench.state.folderClicked?.id ||
-          object.id === workbench.state.fileClicked?.id)
+              $loading &&
+              (object.id === workbench.state.folderClicked?.id ||
+                      object.id === workbench.state.fileClicked?.id)
       ) {
         return ObjectActive;
       }

@@ -2,14 +2,10 @@ import { OakFile, OakObject } from "./types";
 import AppConfig from "../environment";
 import { PathJoin } from "../util/path";
 
-async function fetchJson<T>(
-  input: RequestInfo | URL,
-  init?: RequestInit | undefined
-): Promise<T> {
-  console.log(input);
+async function fetchJson<T>(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<T> {
   const resp = await fetch(input, init);
   const json = await resp.json();
-  console.log(json);
+  console.log('request:', input, json);
   return json;
 }
 

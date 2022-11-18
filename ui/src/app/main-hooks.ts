@@ -1,19 +1,15 @@
 import { RefObject, useCallback, useEffect, useRef } from "react";
 import OakApi from "./oak-api";
 import { CreatorInput } from "./creator-input";
-import { TextEditor } from "./text-editor";
-import { Workbench } from "./workbench";
+import { TextEditor } from "../text-editor/class";
+import { Workbench } from "../workbench/class";
 
 export class MainHooks {
   creatorInput: CreatorInput;
   workbench: Workbench;
   textEditor: TextEditor;
 
-  constructor(
-    creatorInput: CreatorInput,
-    workbench: Workbench,
-    textEditor: TextEditor
-  ) {
+  constructor(creatorInput: CreatorInput, workbench: Workbench, textEditor: TextEditor) {
     this.creatorInput = creatorInput;
     this.workbench = workbench;
     this.textEditor = textEditor;
@@ -47,7 +43,7 @@ export class MainHooks {
         if (!this.textEditor.state.commitFile) return;
         if (!this.textEditor.state.openFile) return;
         await OakApi.upgradeFile(this.textEditor.state.openFile);
-        this.textEditor.commitFile()
+        this.textEditor.commitFile();
       })();
     }, [this.textEditor.state.commitFile]);
   };
@@ -62,9 +58,9 @@ export class MainHooks {
   };
 
   useAcceptObjectNameWithEnterKeyWhileCreatingObject = () => {
-    if (!this.creatorInput.state.creatingNewObject) return;
     const handleEnterPress = useCallback(
       (event: KeyboardEvent) => {
+        if (!this.creatorInput.state.creatingNewObject) return;
         if (event.key === "Enter") {
           this.creatorInput.acceptObject();
           this.workbench.startLoading();

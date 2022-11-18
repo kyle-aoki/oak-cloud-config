@@ -1,4 +1,4 @@
-import { OakObject } from "./types";
+import { OakObject } from "../app/types";
 import { Stateful } from "../util/stateful-class";
 
 export interface WorkbenchState {
